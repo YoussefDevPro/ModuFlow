@@ -1,0 +1,64 @@
+/* Définition de quelques couleurs Catppuccin (exemple) */
+:root {
+  --cat-bg: #1E1E2E;
+  --cat-sidebar: #2E2E3E;
+  --cat-hover: #3E3E5E;
+  --cat-text: #D9E0EE;
+}
+
+/* Styles globaux */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--cat-bg);
+  color: var(--cat-text);
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Barre latérale - explorateur de fichiers */
+#file-explorer {
+  width: 250px;
+  background-color: var(--cat-sidebar);
+  border-right: 1px solid #444;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+#file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#file-list li {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+#file-list li:hover {
+  background-color: var(--cat-hover);
+}
+
+#file-list li img {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+/* Zone d'édition */
+#editor-container {
+  flex-grow: 1;
+  height: 100%;
+  width: 100%;
+}
