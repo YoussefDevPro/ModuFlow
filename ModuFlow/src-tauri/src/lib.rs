@@ -2,20 +2,14 @@
 #[tauri::command]
 fn list_files() -> Result<Vec<String>, String> {
     use std::fs;
-    use std::io;
 
-    // Tente de lire le contenu du dossier courant
-    let entries = fs::read_dir(".").map_err(|e| format!("Erreur lors de la lecture du dossier : {}", e))?;
-
+    let entries = fs::read_dir(".").map_err(|e| format!("Error reading directory: {}", e))?;
     let mut files = Vec::new();
 
-    // Parcourt chaque entrée du dossier
     for entry in entries {
-        let entry = entry.map_err(|e| format!("Erreur lors de la lecture d'une entrée : {}", e))?;
+        let entry = entry.map_err(|e| format!("Error reading entry: {}", e))?;
 
-        // Vérifie si l'entrée est bien un fichier
-        if entry.file_type().map_err(|e| format!("Erreur lors de la récupération du type d'entrée : {}", e))?.is_file() {
-            // Convertit le nom de fichier en String et l'ajoute à la liste
+        if entry.file_type().map_err(|e| format!("Error getting entry type: {}", e))?.is_file() {
             if let Some(name) = entry.file_name().to_str() {
                 files.push(name.to_string());
             }
