@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Brass+Mono&display=swap');
+
+:root {
+  /* Palette Catppuccin Mocha */
+  --bg: #1e1e2e;       /* Base */
+  --bg-alt: #181825;   /* Mantle */
+  --fg: #cdd6f4;       /* Texte */
+  --accent: #fab387;   /* Peach */
+  --border: #45475a;   /* Surface1 */
+  --folder: #f5c2e7;   /* Pink */
+  --file: #a6e3a1;     /* Green */
+  --hover: #313244;    /* Légère mise en valeur au survol */
+  --font-size: 18px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Brass Mono', monospace;    
+  -webkit-user-select: none;
+  -moz-user-select: none; 
+  -ms-user-select: none;
+  user-select: none; 
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-size: var(--font-size);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Barre supérieure pour les commandes */
+.top-bar {
+  background: var(--bg-alt);
+  width: 100%;
+  padding: 15px 20px;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+}
+
+input {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  padding: 10px;
+  color: var(--fg);
+  border-radius: 5px;
+  outline: none;
+  transition: border-color 0.3s ease;
+  font-size: 1em;
+}
+
+input:focus {
+  border-color: var(--accent);
+}
+
+button {
+  background: var(--accent);
+  border: none;
+  padding: 10px 16px;
+  color: var(--bg);
+  font-weight: 600;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-size: 1em;
+}
+
+button:hover {
+  background: var(--folder);
+}
+
+.file-explorer {
+  background: linear-gradient(145deg, var(--bg-alt), var(--bg));
+  height: 100%;
+  width: 20%;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--bg-alt);
+
+  /* Changer la direction de la barre de défilement sans affecter le contenu */
+  writing-mode: vertical-rl;
+}
+
+/* Réinitialiser la direction du contenu pour qu'il reste en lecture normale */
+.file-explorer > * {
+  direction: ltr;
+}
+
+/* Styles pour Webkit restent inchangés */
+.file-explorer::-webkit-scrollbar {
+  width: 12px;
+}
+
+.file-explorer::-webkit-scrollbar-track {
+  background: var(--bg-alt);
+  border-radius: 8px;
+}
+
+.file-explorer::-webkit-scrollbar-thumb {
+  background-color: var(--accent);
+  border-radius: 8px;
+  border: 3px solid var(--bg-alt);
+}
+
+
+
+
+ul {
+  list-style: none;
+  padding-left: 20px;
+}
+
+li {
+  margin: 10px 0;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+li:hover {
+  background: var(--hover);
+  color: var(--accent);
+}
+
+/* Style pour la sélection via le clavier */
+li:focus {
+  background: var(--accent);
+  color: var(--bg);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* Styles spécifiques pour dossiers et fichiers */
+.folder {
+  color: var(--folder);
+  font-weight: bold;
+}
+
+.file {
+  color: var(--file);
+}
+
+.folder-item {
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.file-item {
+  color: var(--fg);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .top-bar {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .input-group {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  input, button {
+    width: 100%;
+  }
+}
