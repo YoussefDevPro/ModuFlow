@@ -84,8 +84,8 @@ button:hover {
 
 .file-explorer {
   background: linear-gradient(145deg, var(--bg-alt), var(--bg));
-  height: 100%;
   width: 20%;
+  height: calc(100vh - 60px); /* Prend en compte la barre supérieure */
   margin: 20px auto;
   padding: 20px;
   border-radius: 8px;
@@ -94,17 +94,9 @@ button:hover {
   box-shadow: 0 4px 6px rgba(0,0,0,0.2);
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--bg-alt);
-
-  /* Changer la direction de la barre de défilement sans affecter le contenu */
-  writing-mode: vertical-rl;
 }
 
-/* Réinitialiser la direction du contenu pour qu'il reste en lecture normale */
-.file-explorer > * {
-  direction: ltr;
-}
-
-/* Styles pour Webkit restent inchangés */
+/* Scrollbar pour navigateurs Webkit */
 .file-explorer::-webkit-scrollbar {
   width: 12px;
 }
@@ -120,67 +112,72 @@ button:hover {
   border: 3px solid var(--bg-alt);
 }
 
-
-
-
-ul {
+/* Styles de la liste */
+.file-explorer ul {
   list-style: none;
-  padding-left: 20px;
+  margin: 0;
+  padding: 0;
 }
 
-li {
-  margin: 10px 0;
+.file-explorer li {
+  margin: 8px 2px;
+  padding: 8px 12px;
   cursor: pointer;
   transition: background 0.3s ease, color 0.3s ease;
-  padding: 5px 10px;
   border-radius: 4px;
+  display: block;  /* ou display: block si tu préfères */
 }
 
-li:hover {
+/* Hover & focus */
+.file-explorer li:hover {
   background: var(--hover);
   color: var(--accent);
 }
 
-/* Style pour la sélection via le clavier */
-li:focus {
+.file-explorer li:focus {
   background: var(--accent);
   color: var(--bg);
   outline: none;
   box-shadow: 0 0 0 2px var(--accent);
 }
 
+/* UL imbriqués (sous-dossiers/fichiers) */
+.file-explorer li ul {
+  margin: 0;
+  padding-left: 8px; /* Indentation pour montrer la hiérarchie */
+}
+
+.file-explorer li ul li {
+  margin: 4px 0;        /* Un petit espace vertical */
+  padding: 4px 8px;     /* Pas de padding négatif */
+}
+
 /* Styles spécifiques pour dossiers et fichiers */
 .folder {
   color: var(--folder);
   font-weight: bold;
+  margin-right: 0px;
 }
 
 .file {
   color: var(--file);
+  margin-right: 0px;
 }
 
 .folder-item {
   font-weight: bold;
   color: var(--accent);
+  height: auto;
 }
 
 .file-item {
   color: var(--fg);
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .top-bar {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .input-group {
-    width: 100%;
-    flex-direction: column;
-  }
-  
-  input, button {
-    width: 100%;
-  }
+svg {
+  width: 32px;
+  height: 32px;
+  fill: currentColor;
+  vertical-align: middle;
+  margin-right: 8px;
 }
