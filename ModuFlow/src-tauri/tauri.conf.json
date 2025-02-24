@@ -13,13 +13,9 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "ModuFlow : the hail, it's BETA",
-        "width": 1400,
-        "height": 789,
-        "fullscreen": true,
-        "transparent": true,
-        "decorations": false,
-        "resizable": true
+        "title": "moduflow",
+        "width": 800,
+        "height": 600
       }
     ],
     "security": {
