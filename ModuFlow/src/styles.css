@@ -225,3 +225,26 @@ body::before {
   border-color: var(--mauve);
 }
 
+.icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+.file-content, .folder-header {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.file-icon, .folder-icon {
+  min-width: 20px;
+}
+
+.folder-item {
+  margin-left: 20px;
+}
+
+.folder-header {
+  margin-left: -20px;
+}
