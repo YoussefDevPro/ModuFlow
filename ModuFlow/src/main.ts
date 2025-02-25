@@ -5,7 +5,7 @@ const resizeHandle = document.querySelector('.resize-handle') as HTMLElement;
 const fileExplorer = document.querySelector('.file-explorer') as HTMLElement;
 let isResizing = false;
 
-resizeHandle.addEventListener('mousedown', (e) => {
+resizeHandle.addEventListener('mousedown', (_) => {
   isResizing = true;
   document.addEventListener('mousemove', handleMouseMove);
   document.addEventListener('mouseup', () => {
