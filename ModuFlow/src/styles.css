@@ -1,11 +1,17 @@
 :root {
   --base: #1e1e2e;
+  --crust: #11111b;
   --surface0: #313244;
-  --surface1: #45475a;
+  --surface1: #45475a80;
   --text: #cdd6f4;
   --subtext0: #a6adc8;
   --blue: #89b4fa;
   --lavender: #b4befe;
+  --mauve: #cba6f7;
+  --overlay0: #6c7086;
+  --glass-bg: rgba(49, 50, 68, 0.65);
+  --glass-border: rgba(203, 166, 247, 0.25);
+  --glass-shadow: rgba(31, 38, 135, 0.37);
 }
 
 * {
@@ -14,81 +20,165 @@
   box-sizing: border-box;
 }
 
+@font-face {
+  font-family: 'Brass Mono';
+  src: url('/fonts/BrassMono-Regular.woff2') format('woff2');
+}
+
+html {
+  height: 100vh;
+}
+
 body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background-color: var(--base);
+  font-family: 'Brass Mono', system-ui, -apple-system, monospace;
+  background-color: var(--crust);
   color: var(--text);
   min-height: 100vh;
   overflow: hidden;
   position: relative;
 }
 
-/* Add animated background */
+/* Animated background */
 body::before {
   content: '';
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   background: 
-    radial-gradient(circle at 15% 50%, rgba(137, 180, 250, 0.08) 0%, transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(180, 190, 254, 0.08) 0%, transparent 25%);
-  animation: backgroundMove 15s ease-in-out infinite alternate;
+    radial-gradient(circle at 0% 0%, hsla(267, 100%, 75%, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 100% 0%, hsla(291, 100%, 75%, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, hsla(244, 100%, 75%, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, hsla(301, 100%, 75%, 0.1) 0%, transparent 50%);
+  animation: backgroundShift 20s ease-in-out infinite alternate;
   z-index: -1;
 }
 
-@keyframes backgroundMove {
-  0% { transform: scale(1) rotate(0deg); }
-  100% { transform: scale(1.1) rotate(3deg); }
+@keyframes backgroundShift {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 .top-bar {
   padding: 1rem;
-  background: rgba(49, 50, 68, 0.7);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(205, 214, 244, 0.1);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
 }
 
 .main-container {
   display: flex;
-  height: calc(100vh - 4rem);
+  height: calc(100vh - 60px);
   overflow: hidden;
+  padding: 12px;
+  gap: 12px;
 }
 
 .panel {
-  height: 100%;
+  height: 99%;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .file-explorer {
   min-width: 200px;
   width: 300px;
-  background: rgba(49, 50, 68, 0.7);
-  backdrop-filter: blur(10px);
-  border-right: 1px solid rgba(205, 214, 244, 0.1);
+  padding: 15px;
+  overflow-x: hidden;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    0 8px 32px 0 var(--glass-shadow),
+    0 0 0 1px var(--glass-border);
+  animation: panelFadeIn 0.6s ease-out;
 }
 
 .editor {
   flex: 1;
-  background: rgba(49, 50, 68, 0.5);
-  backdrop-filter: blur(10px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    0 8px 32px 0 var(--glass-shadow),
+    0 0 0 1px var(--glass-border);
+  animation: panelFadeIn 0.6s ease-out 0.2s backwards;
 }
 
-.editor-content {
-  height: 100%;
-  padding: 1rem;
-  overflow-y: auto;
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .resize-handle {
   width: 4px;
   background: var(--surface1);
   cursor: col-resize;
-  transition: background 0.2s;
+  margin: 50px 0;
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .resize-handle:hover {
-  background: var(--blue);
+  width: 6px;
+  background: var(--mauve);
+  box-shadow: 0 0 12px var(--mauve);
+}
+
+.action-btn {
+  padding: 10px 20px;
+  background: rgba(203, 166, 247, 0.15);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: 'Brass Mono', monospace;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.action-btn:hover {
+  background: rgba(203, 166, 247, 0.25);
+  border-color: var(--mauve);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    0 0 0 1px var(--mauve),
+    0 0 20px rgba(203, 166, 247, 0.3);
+}
+
+/* Enhanced scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(49, 50, 68, 0.3);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(203, 166, 247, 0.4);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--mauve);
+  box-shadow: 0 0 12px var(--mauve);
 }
 
 .explorer-content {
@@ -99,21 +189,39 @@ body::before {
 }
 
 /* Scrollbar styling */
-pre::-webkit-scrollbar {
+::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-pre::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: var(--surface0);
   border-radius: 4px;
 }
 
-pre::-webkit-scrollbar-thumb {
-  background: var(--surface1);
+::-webkit-scrollbar-thumb {
+  background: rgba(203, 166, 247, 0.3);
   border-radius: 4px;
 }
 
-pre::-webkit-scrollbar-thumb:hover {
-  background: var(--subtext0);
+::-webkit-scrollbar-thumb:hover {
+  background: var(--mauve);
 }
+
+.action-btn {
+  padding: 8px 16px;
+  background: rgba(203, 166, 247, 0.1);
+  border: 1px solid rgba(203, 166, 247, 0.2);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Brass Mono', monospace;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  background: rgba(203, 166, 247, 0.2);
+  border-color: var(--mauve);
+}
+

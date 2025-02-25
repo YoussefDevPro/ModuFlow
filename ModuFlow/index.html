@@ -9,7 +9,7 @@
   </head>
 
   <body>
-    <div class="top-bar">
+    <div data-tauri-drag-region class="top-bar">
       <div class="actions">
         <button id="selectDir" class="action-btn">Open Folder</button>
       </div>
@@ -17,7 +17,7 @@
     
     <div class="main-container">
       <div class="panel file-explorer">
-        <pre id="result" class="explorer-content"></pre>
+        <div id="result" class="explorer-content"></div>
       </div>
       <div class="resize-handle"></div>
       <div class="panel editor">
