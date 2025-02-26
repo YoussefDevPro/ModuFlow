@@ -22,107 +22,95 @@ function handleMouseMove(e: MouseEvent) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const selectDirBtn = document.querySelector<HTMLButtonElement>('#selectDir');
-  // Vous pouvez utiliser une div à la place d'un <pre> pour insérer des éléments HTML
-  const resultContainer = document.querySelector<HTMLDivElement>('#result');
+interface DirectoryItem {
+    name: string;
+    path: string;
+    icon: string;
+    is_dir: boolean;
+    children?: DirectoryItem[];
+    has_children: boolean;
+}
 
-  if (selectDirBtn && resultContainer) {
-    selectDirBtn.addEventListener('click', async () => {
-      try {
-        const selectedPath = await open({
-          directory: true,
-          multiple: false
+document.addEventListener('DOMContentLoaded', () => {
+    const selectDirBtn = document.querySelector<HTMLButtonElement>('#selectDir');
+    const resultContainer = document.querySelector<HTMLDivElement>('#result');
+    
+    if (selectDirBtn && resultContainer) {
+        selectDirBtn.addEventListener('click', async () => {
+            try {
+                const selectedPath = await open({
+                    directory: true,
+                    multiple: false
+                });
+
+                if (selectedPath) {
+                    const directoryItems = await invoke<DirectoryItem[]>('read_directory_structure', {
+                        path: selectedPath,
+                        depth: 1
+                    });
+
+                    resultContainer.innerHTML = generateHtmlStructure(directoryItems);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultContainer.textContent = `Error: ${error}`;
+            }
         });
 
-        if (selectedPath) {
-          // Récupère la structure du dossier
-          const structure = await invoke('read_directory_structure', {
-            path: selectedPath
-          });
-
-          // Efface le contenu précédent
-          resultContainer.innerHTML = '';
-          // Crée la structure de fichiers/dossiers et l'ajoute au DOM
-          const fileStructure = createFileStructure(structure);
-          resultContainer.appendChild(fileStructure);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        resultContainer.textContent = `Error: ${error}`;
-      }
-    });
-  }
-});
-
-/**
- * Crée l’élément racine qui contiendra la totalité de la structure
- */
-function createFileStructure(structure: any): HTMLElement {
-  const container = document.createElement('div');
-  container.classList.add('file-structure');
-  // Pour chaque élément (fichier ou dossier) à la racine
-  for (const name in structure) {
-    const itemElement = createItem(name, structure[name]);
-    container.appendChild(itemElement);
-  }
-  return container;
-}
-
-/**
- * Crée un élément (fichier ou dossier) en fonction des données
- */
-function createItem(name: string, itemData: any): HTMLElement {
-  const itemElement = document.createElement('div');
-
-  if (itemData.type === 'file') {
-    // Création d'un fichier
-    itemElement.classList.add('file-item');
-    // On stocke le chemin dans un data attribute
-    itemElement.setAttribute('data-path', itemData.path);
-
-    // Ajout de l'icône (le chemin vers le SVG)
-    const iconImg = document.createElement('img');
-    iconImg.src = itemData.icon;
-    iconImg.classList.add('file-icon');
-    itemElement.appendChild(iconImg);
-
-    // Ajout du nom du fichier
-    const label = document.createElement('span');
-    label.textContent = name;
-    itemElement.appendChild(label);
-  } else if (itemData.type === 'directory') {
-    // Création d'un dossier
-    itemElement.classList.add('folder-item');
-
-    // Création d'un header pour le dossier (icône + nom)
-    const header = document.createElement('div');
-    header.classList.add('folder-header');
-
-    // Replace SVG fetch with direct img element
-    const iconImg = document.createElement('img');
-    iconImg.src = itemData.icon;
-    iconImg.classList.add('folder-icon');
-    header.appendChild(iconImg);
-
-    const label = document.createElement('span');
-    label.textContent = name;
-    header.appendChild(label);
-
-    itemElement.appendChild(header);
-
-    // Si le dossier contient des enfants, on les affiche dans un conteneur
-    if (itemData.content) {
-      const childrenContainer = document.createElement('div');
-      childrenContainer.classList.add('folder-contents');
-      // Parcours de chaque enfant dans le dossier
-      for (const childName in itemData.content) {
-        const childElement = createItem(childName, itemData.content[childName]);
-        childrenContainer.appendChild(childElement);
-      }
-      itemElement.appendChild(childrenContainer);
+        resultContainer.addEventListener('click', async (event) => {
+            const target = event.target as HTMLElement;
+            if (target.classList.contains('folder-header') || target.closest('.folder-header')) {
+                const header = target.closest('.folder-header') as HTMLElement;
+                const folderItem = header.closest('.folder-item') as HTMLElement;
+                const contents = folderItem.querySelector('.folder-contents') as HTMLElement;
+                
+                if (contents) {
+                    const isExpanded = folderItem.classList.contains('expanded');
+                    
+                    if (!isExpanded && !contents.dataset.loaded) {
+                        try {
+                            const path = folderItem.dataset.path;
+                            if (path) {
+                                const items = await invoke<DirectoryItem[]>('read_directory_contents', { path });
+                                contents.innerHTML = generateHtmlStructure(items);
+                                contents.dataset.loaded = 'true';
+                            }
+                        } catch (error) {
+                            console.error('Error loading contents:', error);
+                        }
+                    }
+                    
+                    contents.classList.toggle('hidden');
+                    folderItem.classList.toggle('expanded');
+                }
+            }
+        });
     }
-  }
 
-  return itemElement;
-}
+    function generateHtmlStructure(items: DirectoryItem[]): string {
+        return items.map(item => {
+            // Convert the asset path to a proper URL that Tauri can handle
+            const iconPath = `/${item.icon.replace(/\\/g, '/')}`;
+            
+            if (item.is_dir) {
+                return `
+                    <div class="folder-item" data-path="${item.path}">
+                        <div class="folder-header">
+                            <img src="${iconPath}" class="folder-icon" alt="folder"/>
+                            <span>${item.name}</span>
+                            ${item.has_children ? '<span class="expand-indicator">▶</span>' : ''}
+                        </div>
+                        <div class="folder-contents hidden"></div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="file-item" data-path="${item.path}">
+                        <img src="${iconPath}" class="file-icon" alt="file"/>
+                        <span>${item.name}</span>
+                    </div>
+                `;
+            }
+        }).join('');
+    }
+});

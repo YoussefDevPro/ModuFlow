@@ -231,20 +231,45 @@ body::before {
   margin-right: 8px;
 }
 
-.file-content, .folder-header {
-  display: flex;
-  align-items: center;
-  padding: 4px;
+.folder-item .expand-indicator {
+  margin-left: 5px;
+  transition: transform 0.2s;
 }
 
-.file-icon, .folder-icon {
-  min-width: 20px;
+.folder-item.expanded > .folder-header .expand-indicator {
+  transform: rotate(90deg);
 }
 
-.folder-item {
+.folder-contents {
   margin-left: 20px;
 }
 
-.folder-header {
-  margin-left: -20px;
+.hidden {
+  display: none;
+}
+
+.folder-icon,
+.file-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.folder-header,
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 4px;
+}
+
+.folder-item .expand-indicator {
+    margin-right: 5px;
+    margin-left: 0;
+    transition: transform 0.2s;
+    min-width: 12px;
+}
+
+.folder-item.expanded > .folder-header .expand-indicator {
+    transform: rotate(90deg);
 }
