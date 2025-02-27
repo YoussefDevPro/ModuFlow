@@ -37,20 +37,23 @@ struct DirectoryItem {
 
 #[tauri::command]
 fn read_directory_structure(path: String, depth: Option<u32>) -> Result<Vec<DirectoryItem>, String> {
-
     fn generate_structure(path: &Path, current_depth: u32, max_depth: u32) -> Vec<DirectoryItem> {
-        let mut result = Vec::new();
+        let mut result = Vec::with_capacity(16); // Pre-allocate with reasonable capacity
         
         if let Ok(entries) = fs::read_dir(path) {
             let entries: Vec<_> = entries
                 .filter_map(Result::ok)
                 .collect();
             
-            // Process entries in chunks to avoid memory issues
             for entry in entries {
-                let name = entry.file_name().to_string_lossy().to_string();
                 let full_path = entry.path();
-                let is_dir = full_path.is_dir();
+                let metadata = match entry.metadata() {
+                    Ok(meta) => meta,
+                    Err(_) => continue, // Skip entries with inaccessible metadata
+                };
+                
+                let is_dir = metadata.is_dir();
+                let name = entry.file_name().to_string_lossy().into_owned();
                 let icon_path = get_icon_path(&full_path);
                 
                 let has_children = if is_dir {
@@ -67,7 +70,7 @@ fn read_directory_structure(path: String, depth: Option<u32>) -> Result<Vec<Dire
 
                 result.push(DirectoryItem {
                     name,
-                    path: full_path.to_string_lossy().to_string(),
+                    path: full_path.to_string_lossy().into_owned(),
                     icon: icon_path,
                     is_dir,
                     children,
@@ -94,15 +97,20 @@ fn read_directory_contents(path: String) -> Result<Vec<DirectoryItem>, String> {
         return Err("Not a directory".to_string());
     }
 
-    let mut items = Vec::new();
+    let mut items = Vec::with_capacity(16); // Pre-allocate with reasonable capacity
     if let Ok(entries) = fs::read_dir(path) {
         for entry in entries.filter_map(Result::ok) {
             let full_path = entry.path();
-            let is_dir = full_path.is_dir();
+            let metadata = match entry.metadata() {
+                Ok(meta) => meta,
+                Err(_) => continue, // Skip entries with inaccessible metadata
+            };
+            
+            let is_dir = metadata.is_dir();
             
             items.push(DirectoryItem {
-                name: entry.file_name().to_string_lossy().to_string(),
-                path: full_path.to_string_lossy().to_string(),
+                name: entry.file_name().to_string_lossy().into_owned(),
+                path: full_path.to_string_lossy().into_owned(),
                 icon: get_icon_path(&full_path),
                 is_dir,
                 children: None,
@@ -118,8 +126,26 @@ fn read_directory_contents(path: String) -> Result<Vec<DirectoryItem>, String> {
     Ok(items)
 }
 
+#[tauri::command]
+fn read_file_content(path: String) -> Result<String, String> {
+    let path = Path::new(&path);
+    if !path.exists() {
+        return Err("File does not exist".to_string());
+    }
+    
+    match fs::read_to_string(path) {
+        Ok(content) => Ok(content),
+        Err(e) => Err(e.to_string())
+    }
+}
 
-
+#[tauri::command]
+fn save_file_content(path: String, content: String) -> Result<(), String> {
+    match fs::write(path, content) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e.to_string())
+    }
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -128,7 +154,9 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             read_directory_structure,
-            read_directory_contents
+            read_directory_contents,
+            read_file_content,
+            save_file_content
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
