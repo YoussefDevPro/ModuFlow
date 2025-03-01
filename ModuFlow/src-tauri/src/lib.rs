@@ -38,7 +38,7 @@ struct DirectoryItem {
 #[tauri::command]
 fn read_directory_structure(path: String, depth: Option<u32>) -> Result<Vec<DirectoryItem>, String> {
     fn generate_structure(path: &Path, current_depth: u32, max_depth: u32) -> Vec<DirectoryItem> {
-        let mut result = Vec::with_capacity(16); // Pre-allocate with reasonable capacity
+        let mut result = Vec::with_capacity(16); 
         
         if let Ok(entries) = fs::read_dir(path) {
             let entries: Vec<_> = entries
@@ -49,7 +49,7 @@ fn read_directory_structure(path: String, depth: Option<u32>) -> Result<Vec<Dire
                 let full_path = entry.path();
                 let metadata = match entry.metadata() {
                     Ok(meta) => meta,
-                    Err(_) => continue, // Skip entries with inaccessible metadata
+                    Err(_) => continue, 
                 };
                 
                 let is_dir = metadata.is_dir();
@@ -97,13 +97,13 @@ fn read_directory_contents(path: String) -> Result<Vec<DirectoryItem>, String> {
         return Err("Not a directory".to_string());
     }
 
-    let mut items = Vec::with_capacity(16); // Pre-allocate with reasonable capacity
+    let mut items = Vec::with_capacity(16); 
     if let Ok(entries) = fs::read_dir(path) {
         for entry in entries.filter_map(Result::ok) {
             let full_path = entry.path();
             let metadata = match entry.metadata() {
                 Ok(meta) => meta,
-                Err(_) => continue, // Skip entries with inaccessible metadata
+                Err(_) => continue, 
             };
             
             let is_dir = metadata.is_dir();
