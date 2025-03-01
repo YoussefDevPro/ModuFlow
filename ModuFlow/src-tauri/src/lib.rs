@@ -1,10 +1,8 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust
 use std::fs;
 use std::path::{Path, PathBuf};
 use serde::Serialize;
 
 fn get_icon_path(path: &Path) -> String {
-    // Définition du répertoire de base pour les icônes
     let assets_base = PathBuf::from("../public/assets");
 
     if path.is_dir() {
