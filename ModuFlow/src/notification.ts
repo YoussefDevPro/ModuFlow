@@ -27,7 +27,7 @@ export class NotificationSystem {
     public static show(options: NotificationOptions): void {
         this.initialize();
         
-        const { message, type, duration = 12000, context } = options;
+        const { message, type, duration = 6000, context } = options;
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         const icon = document.createElement('div');
@@ -41,12 +41,13 @@ export class NotificationSystem {
                 break;
             case NotificationType.WARNING:
                 icon.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M8 1v10M8 14v1"></path>
+                    <path d="M8 1v8M8 12v1"></path>
+                    <circle cx="8" cy="14" r="0.5" stroke="none" fill="currentColor"></circle>
                 </svg>`;
                 break;
             case NotificationType.ERROR:
                 icon.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M8 1v10M8 14v1"></path>
+                    <path d="M2 2l12 12M14 2L2 14"></path>
                 </svg>`;
                 break;
         }
@@ -68,6 +69,17 @@ export class NotificationSystem {
         
         notification.appendChild(icon);
         notification.appendChild(content);
+        
+        // Add close button
+        const closeButton = document.createElement('button');
+        closeButton.className = 'notification-close';
+        closeButton.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 2l12 12M14 2L2 14"></path>
+        </svg>`;
+        closeButton.addEventListener('click', () => {
+            this.remove(notification);
+        });
+        notification.appendChild(closeButton);
         
         if (this.container) {
             this.container.appendChild(notification);
