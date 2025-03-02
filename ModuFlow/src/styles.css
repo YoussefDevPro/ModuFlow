@@ -37,12 +37,26 @@
   src: url('/fonts/BrassMono-Regular.woff2') format('woff2');
 }
 
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff2/JetBrainsMono-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff2/JetBrainsMono-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+
 html {
   height: 100vh;
 }
 
 body {
-  font-family: 'Brass Mono', system-ui, -apple-system, monospace;
+  font-family: 'JetBrains Mono', 'Brass Mono', system-ui, -apple-system, monospace;
   background-color: var(--base);
   color: var(--text);
   min-height: 100vh;
@@ -172,8 +186,10 @@ body {
   background: var(--mantle);
   border-bottom: 1px solid var(--surface1);
   border-radius: 8px 8px 0 0;
-  padding: 8px 8px 0 8px;
-  gap: 4px;
+  padding: 8px;
+  overflow: visible;
+  align-items: center;
+  gap: 5px;
   overflow-x: auto;
   min-height: 40px;
   transition: padding 0.2s ease;
@@ -186,8 +202,7 @@ body {
   padding: 6px 12px;
   background: var(--surface0);
   border: 1px solid var(--surface1);
-  border-bottom: none;
-  border-radius: 6px 6px 0 0;
+  border-radius: 6px;
   cursor: pointer;
   user-select: none;
   position: relative;
@@ -199,26 +214,25 @@ body {
 .editor-tab.active {
   background: var(--surface1);
   border-color: var(--mauve);
-  transform: translateY(-2px);
 }
 
 .editor-tab:hover:not(.active) {
   background: var(--surface1);
-  transform: translateY(-1px);
 }
 
 .tab-icon {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 
 .editor-tab:hover .tab-icon {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
 .tab-name {
+  font-family: 'JetBrains Mono', monospace;
   font-size: 14px;
   white-space: nowrap;
   overflow: hidden;

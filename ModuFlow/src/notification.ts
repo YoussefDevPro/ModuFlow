@@ -14,7 +14,7 @@ interface NotificationOptions {
 export class NotificationSystem {
     private static container: HTMLElement | null = null;
     private static queue: HTMLElement[] = [];
-    private static maxNotifications: number = 3;
+    private static maxNotifications: number = 5;
 
     public static initialize(): void {
         if (!this.container) {
@@ -27,7 +27,7 @@ export class NotificationSystem {
     public static show(options: NotificationOptions): void {
         this.initialize();
         
-        const { message, type, duration = 3000, context } = options;
+        const { message, type, duration = 12000, context } = options;
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         const icon = document.createElement('div');

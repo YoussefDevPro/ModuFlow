@@ -231,18 +231,8 @@ function createTab(tab: EditorTab, index: number) {
     tabElement.innerHTML = `
         <img src="${tab.icon}" class="tab-icon" alt="file-icon"/>
         <span class="tab-name">${tab.name}</span>
-        <button class="tab-save" title="Save file" style="margin-right: 4px; opacity: 0.6;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
-                <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
-        </button>
         <button class="tab-close">
-            <svg class="save-indicator" width="12" height="12" viewBox="0 0 12 12">
-                <circle class="dot" cx="6" cy="6" r="3" fill="currentColor" style="display: none;"/>
-                <path class="x" d="M3 3L9 9M9 3L3 9" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
+            <svg class="save-indicator" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#ffffff" d="M195.2 195.2a64 64 0 0 1 90.496 0L512 421.504 738.304 195.2a64 64 0 0 1 90.496 90.496L602.496 512 828.8 738.304a64 64 0 0 1-90.496 90.496L512 602.496 285.696 828.8a64 64 0 0 1-90.496-90.496L421.504 512 195.2 285.696a64 64 0 0 1 0-90.496z"></path></g></svg>
         </button>
     `;
 
@@ -291,15 +281,21 @@ function updateTabModifiedState(index: number) {
     const tab = document.querySelectorAll('.editor-tab')[index];
     const saveIndicator = tab?.querySelector('.save-indicator');
     if (saveIndicator) {
-        const dot = saveIndicator.querySelector('.dot') as SVGElement;
-        const x = saveIndicator.querySelector('.x') as SVGElement;
         if (openTabs[index].isModified) {
-            dot.style.display = 'block';
-            x.style.display = 'none';
+            // Show a filled circle for modified files
+            saveIndicator.innerHTML = `
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="6" fill="#ffffff"/>
+                </svg>
+            `;
             NotificationSystem.warning('Tab marked as modified', `Tab: ${openTabs[index].name}`);
         } else {
-            dot.style.display = 'none';
-            x.style.display = 'block';
+            // Show a checkmark for saved files
+            saveIndicator.innerHTML = `
+                <svg class="save-indicator" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#ffffff" d="M195.2 195.2a64 64 0 0 1 90.496 0L512 421.504 738.304 195.2a64 64 0 0 1 90.496 90.496L602.496 512 828.8 738.304a64 64 0 0 1-90.496 90.496L512 602.496 285.696 828.8a64 64 0 0 1-90.496-90.496L421.504 512 195.2 285.696a64 64 0 0 1 0-90.496z"></path></g>
+                </svg>
+            `;
             NotificationSystem.success('Tab marked as saved', `Tab: ${openTabs[index].name}`);
         }
     }
