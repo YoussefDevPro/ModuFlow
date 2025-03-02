@@ -26,23 +26,55 @@ let activeTabPath: string | null = null;
 
 const resizeHandle = document.querySelector('.resize-handle') as HTMLElement;
 const fileExplorer = document.querySelector('.file-explorer') as HTMLElement;
+const editor = document.querySelector('.editor') as HTMLElement;
 let isResizing = false;
+let hasResized = false;
+let initialWidth = 0;
 
-resizeHandle.addEventListener('mousedown', (_) => {
+resizeHandle.addEventListener('mousedown', (e) => {
+  e.preventDefault(); // Prevent text selection during drag
   isResizing = true;
+  hasResized = false;
+  initialWidth = fileExplorer.offsetWidth;
+  
+  // Add visual feedback classes
+  document.body.classList.add('resizing');
+  resizeHandle.classList.add('active');
+  fileExplorer.classList.add('resizing');
+  
   document.addEventListener('mousemove', handleMouseMove);
-  document.addEventListener('mouseup', () => {
+  document.addEventListener('mouseup', handleMouseUp);
+});
+
+function handleMouseUp() {
+  if (isResizing) {
     isResizing = false;
     document.removeEventListener('mousemove', handleMouseMove);
-    NotificationSystem.success('Resize completed', 'UI Event');
-  });
-});
+    document.removeEventListener('mouseup', handleMouseUp);
+    
+    // Remove visual feedback classes
+    document.body.classList.remove('resizing');
+    resizeHandle.classList.remove('active');
+    fileExplorer.classList.remove('resizing');
+    
+    // Only show notification if actual resizing occurred
+    if (hasResized) {
+      NotificationSystem.success('Resize completed', 'UI Event');
+    }
+  }
+}
 
 function handleMouseMove(e: MouseEvent) {
   if (!isResizing) return;
-  const newWidth = e.clientX;
-  if (newWidth >= 200 && newWidth <= window.innerWidth * 0.8) {
-    fileExplorer.style.width = newWidth + 'px';
+  
+  const newWidth = Math.max(200, Math.min(e.clientX, window.innerWidth * 0.8));
+  
+  // Check if width actually changed
+  if (Math.abs(newWidth - fileExplorer.offsetWidth) > 1) {
+    hasResized = true;
+    fileExplorer.style.width = `${newWidth}px`;
+    
+    // Update editor layout if active
     if (activeEditor) {
       activeEditor.layout();
     }
@@ -136,7 +168,7 @@ function getLanguageFromPath(path: string): string {
         'vb': 'vb',
         'java': 'java',
         'go': 'go',
-        'rust': 'rust',
+        'rs': 'rust',
         'swift': 'swift',
         'kotlin': 'kotlin',
         'scala': 'scala',

@@ -260,11 +260,24 @@ body {
   cursor: col-resize;
   margin: 0;
   transition: background-color 0.2s ease, width 0.2s ease;
+  position: relative;
+  z-index: 10;
 }
 
-.resize-handle:hover {
+.resize-handle:hover, .resize-handle.active {
   background: var(--mauve);
   width: 6px;
+}
+
+/* Visual feedback during resize */
+body.resizing {
+  cursor: col-resize;
+}
+
+.file-explorer.resizing {
+  user-select: none;
+  border-color: var(--mauve);
+  box-shadow: 0 0 8px rgba(203, 166, 247, 0.4);
 }
 
 .action-btn {
