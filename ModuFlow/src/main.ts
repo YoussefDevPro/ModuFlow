@@ -83,61 +83,66 @@ function handleMouseMove(e: MouseEvent) {
 
 async function openFile(path: string, name: string, icon: string) {
     try {
-        NotificationSystem.warning('Opening file...', `File: ${name}`);
-        const content = await invoke<string>('read_file_content', { path });
-        const existingTabIndex = openTabs.findIndex(tab => tab.path === path);
+        await NotificationSystem.executeWithLoading(
+            async () => {
+                const content = await invoke<string>('read_file_content', { path });
+                const existingTabIndex = openTabs.findIndex(tab => tab.path === path);
 
-        if (existingTabIndex !== -1) {
-            NotificationSystem.success('Activating existing tab', `File: ${name}`);
-            activateTab(existingTabIndex);
-            return;
-        }
-
-        const editorContainer = document.createElement('div');
-        editorContainer.className = 'editor-container';
-        editorContainer.style.height = '100%';
-        editorContainer.style.display = 'none';
-
-        const editorElement = document.querySelector('.editor') as HTMLElement;
-        editorElement.appendChild(editorContainer);
-
-        const editor = monaco.editor.create(editorContainer, {
-            value: content,
-            language: getLanguageFromPath(path),
-            theme: 'vs-dark',
-            automaticLayout: true,
-        });
-
-        const newTab: EditorTab = { path, name, icon, editor, isModified: false };
-
-        editor.onDidChangeModelContent(() => {
-            const currentTabIndex = openTabs.findIndex(tab => tab.path === path);
-            if (currentTabIndex !== -1) {
-                newTab.isModified = true;
-                updateTabModifiedState(currentTabIndex);
-                NotificationSystem.warning('File modified', `File: ${name}`);
-            }
-        });
-
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, async () => {
-            try {
-                NotificationSystem.warning('Saving file...', `File: ${name}`);
-                await invoke('save_file_content', { path, content: editor.getValue() });
-                const currentTabIndex = openTabs.findIndex(tab => tab.path === path);
-                if (currentTabIndex !== -1) {
-                    newTab.isModified = false;
-                    updateTabModifiedState(currentTabIndex);
-                    NotificationSystem.success('File saved', `File: ${name}`);
+                if (existingTabIndex !== -1) {
+                    activateTab(existingTabIndex);
+                    return;
                 }
-            } catch (error) {
-                console.error('Error saving file:', error);
-                NotificationSystem.error('Error saving file', `File: ${name}`);
-            }
-        });
-        openTabs.push(newTab);
-        createTab(newTab, openTabs.length - 1);
-        activateTab(openTabs.length - 1);
-        NotificationSystem.success('File opened successfully', `File: ${name}`);
+
+                const editorContainer = document.createElement('div');
+                editorContainer.className = 'editor-container';
+                editorContainer.style.height = '100%';
+                editorContainer.style.display = 'none';
+
+                const editorElement = document.querySelector('.editor') as HTMLElement;
+                editorElement.appendChild(editorContainer);
+
+                const editor = monaco.editor.create(editorContainer, {
+                    value: content,
+                    language: getLanguageFromPath(path),
+                    theme: 'vs-dark',
+                    automaticLayout: true,
+                });
+
+                const newTab: EditorTab = { path, name, icon, editor, isModified: false };
+
+                editor.onDidChangeModelContent(() => {
+                    const currentTabIndex = openTabs.findIndex(tab => tab.path === path);
+                    if (currentTabIndex !== -1) {
+                        newTab.isModified = true;
+                        updateTabModifiedState(currentTabIndex);
+                        NotificationSystem.warning('File modified', `File: ${name}`);
+                    }
+                });
+
+                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, async () => {
+                    await NotificationSystem.executeWithLoading(
+                        async () => {
+                            await invoke('save_file_content', { path, content: editor.getValue() });
+                            const currentTabIndex = openTabs.findIndex(tab => tab.path === path);
+                            if (currentTabIndex !== -1) {
+                                newTab.isModified = false;
+                                updateTabModifiedState(currentTabIndex);
+                            }
+                        },
+                        'Saving file...',
+                        'File saved successfully',
+                        `File: ${name}`
+                    );
+                });
+
+                openTabs.push(newTab);
+                createTab(newTab, openTabs.length - 1);
+                activateTab(openTabs.length - 1);
+            },
+            'Opening file...',
+            'File opened successfully',
+            `File: ${name}`
+        );
     } catch (error) {
         console.error('Error opening file:', error);
         NotificationSystem.error('Error opening file', `File: ${name}`);
@@ -374,22 +379,34 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (selectDirBtn && resultContainer) {
         selectDirBtn.addEventListener('click', async () => {
+            let selectedPath: string | null = null;
             try {
-                NotificationSystem.warning('Opening folder dialog...', 'File System');
-                const selectedPath = await open({
-                    directory: true,
-                    multiple: false
-                });
+                selectedPath = await NotificationSystem.executeWithLoading(
+                    async () => {
+                        const result = await open({
+                            directory: true,
+                            multiple: false
+                        });
+                        return result as string;
+                    },
+                    'Selecting folder...',
+                    'Folder selected successfully',
+                    'File System'
+                );
 
                 if (selectedPath) {
-                    NotificationSystem.warning('Reading directory structure...', `Path: ${selectedPath}`);
-                    const directoryItems = await invoke<DirectoryItem[]>('read_directory_structure', {
-                        path: selectedPath,
-                        depth: 1
-                    });
-
-                    resultContainer.innerHTML = generateHtmlStructure(directoryItems);
-                    NotificationSystem.success('Directory loaded', `Path: ${selectedPath}`);
+                    await NotificationSystem.executeWithLoading(
+                        async () => {
+                            const directoryItems = await invoke<DirectoryItem[]>('read_directory_structure', {
+                                path: selectedPath,
+                                depth: 1
+                            });
+                            resultContainer.innerHTML = generateHtmlStructure(directoryItems);
+                        },
+                        'Reading directory structure...',
+                        'Directory loaded successfully',
+                        `Path: ${selectedPath}`
+                    );
                 } else {
                     NotificationSystem.warning('Folder selection cancelled', 'File System');
                 }
@@ -418,14 +435,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (contents) {
                     if (!contents.dataset.loaded) {
+                        NotificationSystem.warning('Loading folder contents...', `Folder: ${folderItem.querySelector('span')?.textContent || ''}`);
                         try {
                             const path = folderItem.dataset.path;
                             if (path) {
-                                NotificationSystem.warning('Loading folder contents...', `Folder: ${folderItem.querySelector('span')?.textContent || ''}`);
-                                const items = await invoke<DirectoryItem[]>('read_directory_contents', { path });
-                                contents.innerHTML = generateHtmlStructure(items);
-                                contents.dataset.loaded = 'true';
-                                NotificationSystem.success('Folder contents loaded', `Folder: ${folderItem.querySelector('span')?.textContent || ''}`);
+                                await NotificationSystem.executeWithLoading(
+                                    async () => {
+                                        const items = await invoke<DirectoryItem[]>('read_directory_contents', { path });
+                                        contents.innerHTML = generateHtmlStructure(items);
+                                        contents.dataset.loaded = 'true';
+                                    },
+                                    'Loading folder contents...',
+                                    'Folder contents loaded successfully',
+                                    `Folder: ${folderItem.querySelector('span')?.textContent || ''}`
+                                );
                             }
                         } catch (error) {
                             console.error('Error loading contents:', error);

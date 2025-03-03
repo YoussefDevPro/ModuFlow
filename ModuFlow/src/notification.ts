@@ -1,7 +1,8 @@
 export enum NotificationType {
     SUCCESS = 'success',
     WARNING = 'warning',
-    ERROR = 'error'
+    ERROR = 'error',
+    LOADING = 'loading'
 }
 
 interface NotificationOptions {
@@ -9,6 +10,7 @@ interface NotificationOptions {
     type: NotificationType;
     duration?: number;
     context?: string;
+    onComplete?: () => void;
 }
 
 export class NotificationSystem {
@@ -24,16 +26,22 @@ export class NotificationSystem {
         }
     }
 
-    public static show(options: NotificationOptions): void {
+    public static show(options: NotificationOptions): HTMLElement | void {
         this.initialize();
         
-        const { message, type, duration = 6000, context } = options;
+        const { message, type, duration = 6000, context, onComplete } = options;
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         const icon = document.createElement('div');
         icon.className = 'notification-icon';
         
         switch (type) {
+            case NotificationType.LOADING:
+                icon.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="8" cy="8" r="6"></circle>
+                </svg>`;
+                icon.classList.add('loading-spin');
+                break;
             case NotificationType.SUCCESS:
                 icon.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M2 8l4 4 8-8"></path>
@@ -66,20 +74,28 @@ export class NotificationSystem {
             contextEl.textContent = context;
             content.appendChild(contextEl);
         }
+
+        if (type === NotificationType.LOADING) {
+            const progressBar = document.createElement('div');
+            progressBar.className = 'notification-progress';
+            notification.appendChild(progressBar);
+        }
         
         notification.appendChild(icon);
         notification.appendChild(content);
         
-        // Add close button
-        const closeButton = document.createElement('button');
-        closeButton.className = 'notification-close';
-        closeButton.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 2l12 12M14 2L2 14"></path>
-        </svg>`;
-        closeButton.addEventListener('click', () => {
-            this.remove(notification);
-        });
-        notification.appendChild(closeButton);
+        // Add close button for non-loading notifications
+        if (type !== NotificationType.LOADING) {
+            const closeButton = document.createElement('button');
+            closeButton.className = 'notification-close';
+            closeButton.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 2l12 12M14 2L2 14"></path>
+            </svg>`;
+            closeButton.addEventListener('click', () => {
+                this.remove(notification);
+            });
+            notification.appendChild(closeButton);
+        }
         
         if (this.container) {
             this.container.appendChild(notification);
@@ -87,16 +103,29 @@ export class NotificationSystem {
             
             this.manageQueue();
             
-            setTimeout(() => {
-                this.remove(notification);
-            }, duration);
+            if (type !== NotificationType.LOADING && duration) {
+                setTimeout(() => {
+                    this.remove(notification);
+                }, duration);
+            }
+
+            if (type === NotificationType.LOADING) {
+                if (onComplete) {
+                    onComplete();
+                }
+                return notification;
+            }
         }
     }
-    
+
     private static remove(notification: HTMLElement): void {
+        // Don't remove loading notifications unless explicitly completed
+        if (notification.classList.contains('notification-loading') && !notification.classList.contains('completed')) {
+            return;
+        }
+
         if (notification.parentNode) {
             notification.classList.add('removing');
-            
             notification.addEventListener('animationend', () => {
                 if (notification.parentNode) {
                     notification.parentNode.removeChild(notification);
@@ -136,5 +165,35 @@ export class NotificationSystem {
             type: NotificationType.ERROR,
             context
         });
+    }
+    
+    public static loading(message: string, context?: string): HTMLElement {
+        return this.show({
+            message,
+            type: NotificationType.LOADING,
+            context,
+            duration: 0
+        }) as HTMLElement;
+    }
+
+    public static completeLoading(loadingNotification: HTMLElement | null, successMessage: string, context?: string): void {
+        if (loadingNotification && loadingNotification.parentNode) {
+            loadingNotification.classList.add('completed');
+            this.remove(loadingNotification);
+            this.success(successMessage, context);
+        }
+    }
+
+    public static async executeWithLoading<T>(operation: () => Promise<T>, loadingMessage: string, successMessage: string, context?: string): Promise<T> {
+        const loadingNotification = this.loading(loadingMessage, context);
+        try {
+            const result = await operation();
+            this.completeLoading(loadingNotification, successMessage, context);
+            return result;
+        } catch (error) {
+            this.remove(loadingNotification);
+            this.error(error instanceof Error ? error.message : 'An error occurred', context);
+            throw error;
+        }
     }
 }
