@@ -37,9 +37,7 @@ export class NotificationSystem {
         
         switch (type) {
             case NotificationType.LOADING:
-                icon.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="8" cy="8" r="6"></circle>
-                </svg>`;
+                icon.innerHTML = `<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none" class="hds-flight-icon--animation-loading"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g fill="#cba6f7" fill-rule="evenodd" clip-rule="evenodd"> <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z" opacity=".2"></path> <path d="M7.25.75A.75.75 0 018 0a8 8 0 018 8 .75.75 0 01-1.5 0A6.5 6.5 0 008 1.5a.75.75 0 01-.75-.75z"></path> </g> </g></svg>`;
                 icon.classList.add('loading-spin');
                 break;
             case NotificationType.SUCCESS:
@@ -78,6 +76,9 @@ export class NotificationSystem {
         if (type === NotificationType.LOADING) {
             const progressBar = document.createElement('div');
             progressBar.className = 'notification-progress';
+            const progressBarInner = document.createElement('div');
+            progressBarInner.className = 'notification-progress-inner';
+            progressBar.appendChild(progressBarInner);
             notification.appendChild(progressBar);
         }
         
