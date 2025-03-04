@@ -90,8 +90,7 @@ export class NotificationSystem {
             const closeButton = document.createElement('button');
             closeButton.className = 'notification-close';
             closeButton.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M2 2l12 12M14 2L2 14"></path>
-            </svg>`;
+                <path d="M2 2l12 12M14 2L2 14"></path></svg>`;
             closeButton.addEventListener('click', () => {
                 this.remove(notification);
             });
